@@ -1,6 +1,7 @@
 package ru.skillbranch.kotlinexample
 
 import androidx.annotation.VisibleForTesting
+import ru.skillbranch.kotlinexample.extensions.phone
 import java.lang.IllegalArgumentException
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -26,13 +27,13 @@ class User private constructor(
 
     private var phone: String? = null
         set(value) {
-            field = value?.replace("[^+\\d]".toRegex(), "")
+            field = value?.phone()
         }
 
     private var _login: String? = null
     var login: String
         set(value) {
-            _login = value?.toLowerCase()
+            _login = value.toLowerCase()
         }
         get() = _login!!
 
@@ -139,6 +140,14 @@ class User private constructor(
             phone: String? = null
         ): User {
             val (firstName, lastName) = fullName.fullNameToPair()
+
+            if (!phone?.phone().isNullOrBlank()) {
+                phone?.phone()
+                    .let {
+                        if (it?.first() != '+' || it.length != 12)
+                            throw IllegalArgumentException("Enter a valid phone number starting with a + and containing 11 digits")
+                    }
+            }
 
             return when {
                 !phone.isNullOrBlank() -> User(firstName, lastName, phone)
